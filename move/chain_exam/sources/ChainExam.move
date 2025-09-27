@@ -15,15 +15,16 @@ const ADMIN: address = @0x123abc;   // TODO: Change the Admin address
 public struct CHAINEXAM has drop {}
 
 
-// The different objects needed for the ChainExam system on chain
 public struct AdminCap has key {
     id: UID,
 }
 
+// This cap is one time use during an exam, when you submit your exam it is destroyed
 public struct StudentCap has key {
     id: UID,
 }
 
+// This cap is one time use after an exam, when you submit your feedback of the exam, it is destroyed
 public struct CorrectorCap has key {
     id: UID,
 }
@@ -32,14 +33,14 @@ public struct CorrectorCap has key {
 public struct ExamNFT has key, store { 
     id: UID,
     student: address, // USELESS : The student sends to the admin the exam : stud addr = sender addr TODO (remove it)
-    pdf_base64: String,
+    content: String,
 }
 
-// TODO: Apply the ML algorithm on the pdf_base64 and replace the pdf_base64 by the plain text in the pdf
+// TODO: Apply the ML algorithm on the content and replace the content by the plain text in the pdf
 public struct AnonymizeExam has key, store{
     id: UID,
     exam_id: u64,
-    pdf_base64: String,
+    content: String,
 }
 
 public struct Feedback has key, store {
@@ -158,16 +159,17 @@ public fun init_correctors(
 // The URL is a link to his exam's PDF in a decentralized storage service (like DropBox) // A REFAIRE
 public fun send_exam(
     _student: StudentCap,
-    pdf_base64: String,
+    content: String,
     ctx: &mut TxContext,
 ) {
     let nft = ExamNFT {
         id: object::new(ctx),
         student: ctx.sender(),
-        pdf_base64: pdf_base64, // to encrypt
+        content: content, // to encrypt
     };
     transfer::public_transfer(nft, ADMIN);
-    transfer::transfer(_student, ctx.sender());
+    let StudentCap { id } = _student;
+    object::delete(id);
 }
 
 // To call this function ,the React frontend has to call a Mystern library function to get all the ExamNFT own
@@ -189,7 +191,7 @@ public fun send_to_correctors(
     while (!vector::is_empty(&exams)) {
         let exam_ref = vector::pop_back(&mut exams);
         let student = exam_ref.student;
-        let pdf_base64 = exam_ref.pdf_base64;
+        let content = exam_ref.content;
 
         let mut j: u64 = 0;
         while (j < list.list_size) {
@@ -202,7 +204,7 @@ public fun send_to_correctors(
                 let anonymExam = AnonymizeExam {
                     id: object::new(ctx),
                     exam_id: exam_id,
-                    pdf_base64: pdf_base64,
+                    content: content,
                 };
                 transfer::transfer(anonymExam, corrector);
                 break
@@ -231,7 +233,8 @@ public fun send_feedback(
         comment: comment,
     };
     transfer::public_transfer(feedback, ADMIN);
-    transfer::transfer(_corrector, ctx.sender());
+    let CorrectorCap { id } = _corrector;
+    object::delete(id);
 }
 
 public fun send_to_student( 
@@ -287,13 +290,13 @@ const CORRECTOR_TEST_3: address = @0xc3;
 // Same as send_exam but sends to the AdminTest instead of the Admin
 public fun t_send_exam(
     _student: StudentCap,
-    pdf_base64: String,
+    content: String,
     ctx: &mut TxContext,
 ) {
     let nft = ExamNFT {
         id: object::new(ctx),
         student: ctx.sender(),
-        pdf_base64: pdf_base64, 
+        content: content, 
     };
     transfer::public_transfer(nft, ADMIN_TEST);
     transfer::transfer(_student, ctx.sender());
@@ -494,7 +497,7 @@ fun test_send_exam(){
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<ExamNFT>(ADMIN_TEST), true);
     let exam = ts.take_from_sender<ExamNFT>();
     std::unit_test::assert_eq!(exam.student, STUDENT_TEST_1);
-    std::unit_test::assert_eq!(exam.pdf_base64, text);
+    std::unit_test::assert_eq!(exam.content, text);
 
     // Return
     ts.return_to_sender(exam);
@@ -577,36 +580,23 @@ fun test_send_to_correctors() {
 
     let fakeUID_1 = ts::new_object(&mut ts);
     let text1: String = string::utf8(b"pdf1");
-    let exam1 = ExamNFT{id: fakeUID_1, student: STUDENT_TEST_1, pdf_base64: text1};
+    let exam1 = ExamNFT{id: fakeUID_1, student: STUDENT_TEST_1, content: text1};
     vector::push_back(&mut exams, exam1);
 
     let fakeUID_2 = ts::new_object(&mut ts);
     let text2: String = string::utf8(b"pdf2");
-    let exam2 = ExamNFT{id: fakeUID_2, student: STUDENT_TEST_2, pdf_base64: text2};
+    let exam2 = ExamNFT{id: fakeUID_2, student: STUDENT_TEST_2, content: text2};
     vector::push_back(&mut exams, exam2);
 
     let fakeUID_3 = ts::new_object(&mut ts);
     let text3: String = string::utf8(b"pdf3");
-    let exam3 = ExamNFT{id: fakeUID_3, student: STUDENT_TEST_3, pdf_base64: text3};
+    let exam3 = ExamNFT{id: fakeUID_3, student: STUDENT_TEST_3, content: text3};
     vector::push_back(&mut exams, exam3);
-
-    let fakeUID_4 = ts::new_object(&mut ts);
-    let text4: String = string::utf8(b"pdf4");
-    let exam4 = ExamNFT{id: fakeUID_4, student: STUDENT_TEST_4, pdf_base64: text4};
-    vector::push_back(&mut exams, exam4);
-
-    let fakeUID_5 = ts::new_object(&mut ts);
-    let text5: String = string::utf8(b"pdf5");
-    let exam5 = ExamNFT{id: fakeUID_5, student: STUDENT_TEST_5, pdf_base64: text5};
-    vector::push_back(&mut exams, exam5);
-
-    let fakeUID_6 = ts::new_object(&mut ts);
-    let text6: String = string::utf8(b"pdf6");
-    let exam6 = ExamNFT{id: fakeUID_6, student: STUDENT_TEST_6, pdf_base64: text6};
-    vector::push_back(&mut exams, exam6);
 
     // Step 8: Call send_to_correctors
     send_to_correctors(&publisher, admin_cap_corr, exams, &state, ts.ctx());
+    ts.return_to_sender(state);
+    ts.return_to_sender(publisher);
     ts.next_tx(ADMIN_TEST);
 
     // Step 9: Check if the correctors received the AnonymizeExam and that the students received back their exam
@@ -615,26 +605,33 @@ fun test_send_to_correctors() {
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_1), true);
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_2), true);
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_3), true);
+    ts.next_tx(CORRECTOR_TEST_1);
 
+    // Step 10: Check if each corrector received the right copies to grade
+    let anonymExam1 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam1.exam_id, 0);
+    std::unit_test::assert_eq!(anonymExam1.content, text1);
+    ts.return_to_sender(anonymExam1);
+    ts.next_tx(CORRECTOR_TEST_2);
 
+    let anonymExam2 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam2.exam_id, 1);
+    std::unit_test::assert_eq!(anonymExam2.content, text2);
+    ts.return_to_sender(anonymExam2);
+    ts.next_tx(CORRECTOR_TEST_3);
 
-    ts.return_to_sender(state);
-    ts.return_to_sender(publisher);
+    let anonymExam3 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam3.exam_id, 2);
+    std::unit_test::assert_eq!(anonymExam3.content, text3);
+    ts.return_to_sender(anonymExam3);
+
     ts.end();
 }
 
 
-// public fun send_to_correctors(
-//     _publisher: &Publisher,
-//     _admin: AdminCap,
-//     mut exams: vector<ExamNFT>,
-//     list: &AdminState,
-//     ctx: &mut TxContext,
-// )
 
-// public struct ExamNFT has key, store { 
+// public struct AnonymizeExam has key, store{
 //     id: UID,
-//     student: address,
-//     pdf_base64: String,
+//     exam_id: u64,
+//     content: String,
 // }
-

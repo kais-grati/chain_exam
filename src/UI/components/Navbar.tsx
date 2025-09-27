@@ -14,7 +14,7 @@ function Navbar() {
             {/* Logo */}
             <NavigationMenu.Item>
               <Link to="/" className="font-bold text-lg">
-                Chain Exam
+                chain<span className="text-blue-600">Exam</span>
               </Link>
             </NavigationMenu.Item>
 

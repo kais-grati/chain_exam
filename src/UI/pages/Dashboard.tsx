@@ -1,4 +1,5 @@
 import { useUserRole } from "../../UX/useUserRole";
+import StudentDashboard from "../components/StudentDashboard";
 
 export default function Dashboard() {
   const userRoleData = useUserRole();
@@ -12,7 +13,7 @@ export default function Dashboard() {
     return (
       <div>
         {role === "admin" && <p>Welcome, Admin!</p>}
-        {role === "student" && <p>Welcome, Student!</p>}
+        {role === "student" && <StudentDashboard />}
         {!role && <p>No role assigned</p>}
       </div>
     );

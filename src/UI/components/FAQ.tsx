@@ -225,7 +225,7 @@ const ChainExamFAQ = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          <p className="text-gray-600 mb-8 text-lg md:text-xl text-center">
+          <p className="text-gray-600 mb-8 pb-4 text-lg md:text-xl text-center">
             Still have questions?
           </p>
           <Link to="/Help">

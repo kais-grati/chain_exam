@@ -283,6 +283,22 @@ const CORRECTOR_TEST_1: address = @0xc1;
 const CORRECTOR_TEST_2: address = @0xc2;
 const CORRECTOR_TEST_3: address = @0xc3;
 
+#[test_only]
+// Same as send_exam but sends to the AdminTest instead of the Admin
+public fun t_send_exam(
+    _student: StudentCap,
+    pdf_base64: String,
+    ctx: &mut TxContext,
+) {
+    let nft = ExamNFT {
+        id: object::new(ctx),
+        student: ctx.sender(),
+        pdf_base64: pdf_base64, 
+    };
+    transfer::public_transfer(nft, ADMIN_TEST);
+    transfer::transfer(_student, ctx.sender());
+}
+
 #[test]
 fun test_publisher_address_gets_admin_cap() {
     let mut ts = ts::begin(ADMIN_TEST);
@@ -438,42 +454,42 @@ fun test_init_correctors() {
 
 #[test]
 fun test_send_exam(){
-    // let mut ts = ts::begin(ADMIN_TEST);
+    let mut ts = ts::begin(ADMIN_TEST);
 
-    // // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
-    // init(CHAINEXAM{}, ts.ctx());
-    // ts.next_tx(ADMIN_TEST);
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
 
-    // // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
-    // let publisher = ts.take_from_sender<Publisher>();
-    // let admin_cap = ts.take_from_sender<AdminCap>();
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
 
-    // // Step 3: The Admin sends the student caps, then we pass to the context of the student
-    // let mut students = vector::empty<address>();
-    // vector::push_back(&mut students, STUDENT_TEST_1);
-    // init_students(&publisher, admin_cap, students, ts.ctx());
-    // ts.next_tx(STUDENT_TEST_1);
+    // Step 3: The Admin sends the student caps, then we pass to the context of the student
+    let mut students = vector::empty<address>();
+    vector::push_back(&mut students, STUDENT_TEST_1);
+    init_students(&publisher, admin_cap, students, ts.ctx());
+    ts.next_tx(STUDENT_TEST_1);
 
-    // // Step 4: Test if the student has a cap and take the cap, write the string to be sent
-    // std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_1), true);
-    // let student_cap = ts.take_from_sender<StudentCap>();
-    // let text: String = string::utf8(b"my beautiful pdf");
+    // Step 4: Test if the student has a cap and take the cap, write the string to be sent
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_1), true);
+    let student_cap = ts.take_from_sender<StudentCap>();
+    let text: String = string::utf8(b"my beautiful pdf");
 
 
-    // // Step 5: Send the pdf
-    // send_exam(student_cap, text, ts.ctx());
-    // ts.next_tx(ADMIN_TEST);
+    // Step 5: Send the pdf
+    t_send_exam(student_cap, text, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
 
-    // // Step 6: Check if the Admin received the right data 
-    // std::unit_test::assert_eq!(ts::has_most_recent_for_address<ExamNFT>(ADMIN), true);
-    // let exam = ts.take_from_sender<ExamNFT>();
-    // std::unit_test::assert_eq!(exam.student, STUDENT_TEST_1);
-    // std::unit_test::assert_eq!(exam.pdf_base64, text);
+    // Step 6: Check if the Admin received the right data 
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<ExamNFT>(ADMIN_TEST), true);
+    let exam = ts.take_from_sender<ExamNFT>();
+    std::unit_test::assert_eq!(exam.student, STUDENT_TEST_1);
+    std::unit_test::assert_eq!(exam.pdf_base64, text);
 
-    // // Return
-    // ts.return_to_sender(exam);
-    // ts.return_to_sender(publisher);
-    // ts.end();
+    // Return
+    ts.return_to_sender(exam);
+    ts.return_to_sender(publisher);
+    ts.end();
 }
 
 

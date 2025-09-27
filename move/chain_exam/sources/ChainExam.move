@@ -20,7 +20,7 @@ public struct AdminCap has key {
     id: UID,
 }
 
-public struct SubmitCap has key {
+public struct StudentCap has key {
     id: UID,
 }
 
@@ -108,7 +108,7 @@ public fun init_table(
     transfer::transfer(_admin, ctx.sender());
 }
 
-// The admin sends a SubmitCap to each student wallet address present in the list
+// The admin sends a StudentCap to each student wallet address present in the list
 public fun init_students(
     _publisher: &Publisher,
     _admin: AdminCap, 
@@ -122,7 +122,7 @@ public fun init_students(
     while (i < len) {
         let addr = *vector::borrow(&student_addresses, i);
         transfer::transfer(
-            SubmitCap { id: object::new(ctx) },
+            StudentCap { id: object::new(ctx) },
             addr,
         );
         i = i + 1;
@@ -157,7 +157,7 @@ public fun init_correctors(
 // The student sends his exam to the admin
 // The URL is a link to his exam's PDF in a decentralized storage service (like DropBox) // A REFAIRE
 public fun send_exam(
-    _student: SubmitCap,
+    _student: StudentCap,
     content: String,
     ctx: &mut TxContext,
 ) {
@@ -167,7 +167,7 @@ public fun send_exam(
         content: content, // to encrypt
     };
     transfer::public_transfer(nft, ADMIN);
-    let SubmitCap { id } = _student;
+    let StudentCap { id } = _student;
     object::delete(id);
 }
 
@@ -232,7 +232,8 @@ public fun send_feedback(
         comment: comment,
     };
     transfer::public_transfer(feedback, ADMIN);
-    transfer::transfer(_corrector, ctx.sender());
+    let CorrectorCap { id } = _corrector;
+    object::delete(id);
 }
 
 public fun send_to_student( 
@@ -287,7 +288,7 @@ const CORRECTOR_TEST_3: address = @0xc3;
 #[test_only]
 // Same as send_exam but sends to the AdminTest instead of the Admin
 public fun t_send_exam(
-    _student: SubmitCap,
+    _student: StudentCap,
     content: String,
     ctx: &mut TxContext,
 ) {
@@ -418,13 +419,13 @@ fun test_init_students() {
     init_students(&publisher, admin_cap, students, ts.ctx());
     ts.next_tx(ADMIN_TEST);
 
-    // Step 5: Check if each student received a SubmitCap
-    std::unit_test::assert_eq!(ts::has_most_recent_for_address<SubmitCap>(STUDENT_TEST_1), true);
-    std::unit_test::assert_eq!(ts::has_most_recent_for_address<SubmitCap>(STUDENT_TEST_2), true);
-    std::unit_test::assert_eq!(ts::has_most_recent_for_address<SubmitCap>(STUDENT_TEST_3), true);
-    std::unit_test::assert_eq!(ts::has_most_recent_for_address<SubmitCap>(STUDENT_TEST_4), true);
-    std::unit_test::assert_eq!(ts::has_most_recent_for_address<SubmitCap>(STUDENT_TEST_5), true);
-    std::unit_test::assert_eq!(ts::has_most_recent_for_address<SubmitCap>(STUDENT_TEST_6), true);
+    // Step 5: Check if each student received a StudentCap
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_1), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_2), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_3), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_4), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_5), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_6), true);
 
     ts.return_to_sender(publisher);
     ts.end();
@@ -482,8 +483,8 @@ fun test_send_exam(){
     ts.next_tx(STUDENT_TEST_1);
 
     // Step 4: Test if the student has a cap and take the cap, write the string to be sent
-    std::unit_test::assert_eq!(ts::has_most_recent_for_address<SubmitCap>(STUDENT_TEST_1), true);
-    let student_cap = ts.take_from_sender<SubmitCap>();
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_1), true);
+    let student_cap = ts.take_from_sender<StudentCap>();
     let text: String = string::utf8(b"my beautiful pdf");
 
 

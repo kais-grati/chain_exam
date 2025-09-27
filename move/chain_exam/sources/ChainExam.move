@@ -15,15 +15,16 @@ const ADMIN: address = @0x123abc;   // TODO: Change the Admin address
 public struct CHAINEXAM has drop {}
 
 
-// The different objects needed for the ChainExam system on chain
 public struct AdminCap has key {
     id: UID,
 }
 
+// This cap is one time use during an exam, when you submit your exam it is destroyed
 public struct StudentCap has key {
     id: UID,
 }
 
+// This cap is one time use after an exam, when you submit your feedback of the exam, it is destroyed
 public struct CorrectorCap has key {
     id: UID,
 }
@@ -592,23 +593,10 @@ fun test_send_to_correctors() {
     let exam3 = ExamNFT{id: fakeUID_3, student: STUDENT_TEST_3, content: text3};
     vector::push_back(&mut exams, exam3);
 
-    let fakeUID_4 = ts::new_object(&mut ts);
-    let text4: String = string::utf8(b"pdf4");
-    let exam4 = ExamNFT{id: fakeUID_4, student: STUDENT_TEST_4, content: text4};
-    vector::push_back(&mut exams, exam4);
-
-    let fakeUID_5 = ts::new_object(&mut ts);
-    let text5: String = string::utf8(b"pdf5");
-    let exam5 = ExamNFT{id: fakeUID_5, student: STUDENT_TEST_5, content: text5};
-    vector::push_back(&mut exams, exam5);
-
-    let fakeUID_6 = ts::new_object(&mut ts);
-    let text6: String = string::utf8(b"pdf6");
-    let exam6 = ExamNFT{id: fakeUID_6, student: STUDENT_TEST_6, content: text6};
-    vector::push_back(&mut exams, exam6);
-
     // Step 8: Call send_to_correctors
     send_to_correctors(&publisher, admin_cap_corr, exams, &state, ts.ctx());
+    ts.return_to_sender(state);
+    ts.return_to_sender(publisher);
     ts.next_tx(ADMIN_TEST);
 
     // Step 9: Check if the correctors received the AnonymizeExam and that the students received back their exam
@@ -617,26 +605,33 @@ fun test_send_to_correctors() {
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_1), true);
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_2), true);
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_3), true);
+    ts.next_tx(CORRECTOR_TEST_1);
 
+    // Step 10: Check if each corrector received the right copies to grade
+    let anonymExam1 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam1.exam_id, 0);
+    std::unit_test::assert_eq!(anonymExam1.content, text1);
+    ts.return_to_sender(anonymExam1);
+    ts.next_tx(CORRECTOR_TEST_2);
 
+    let anonymExam2 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam2.exam_id, 1);
+    std::unit_test::assert_eq!(anonymExam2.content, text2);
+    ts.return_to_sender(anonymExam2);
+    ts.next_tx(CORRECTOR_TEST_3);
 
-    ts.return_to_sender(state);
-    ts.return_to_sender(publisher);
+    let anonymExam3 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam3.exam_id, 2);
+    std::unit_test::assert_eq!(anonymExam3.content, text3);
+    ts.return_to_sender(anonymExam3);
+
     ts.end();
 }
 
 
-// public fun send_to_correctors(
-//     _publisher: &Publisher,
-//     _admin: AdminCap,
-//     mut exams: vector<ExamNFT>,
-//     list: &AdminState,
-//     ctx: &mut TxContext,
-// )
 
-// public struct ExamNFT has key, store { 
+// public struct AnonymizeExam has key, store{
 //     id: UID,
-//     student: address,
+//     exam_id: u64,
 //     content: String,
 // }
-

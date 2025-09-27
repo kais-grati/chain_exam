@@ -105,7 +105,7 @@ const ChainExamFAQ = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-gray-50">
       {/* Softer Background */}
-      <div className="absolute inset-0 bg-gradient-radial from-purple-100/40 via-violet-50/30 to-indigo-50/20">
+      <div className="absolute inset-0 bg-gradient-radial from-blue-100/40 via-violet-50/30 to-indigo-50/20">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(139,92,246,0.08),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_70%,rgba(168,85,247,0.06),transparent_60%)]"></div>
@@ -154,7 +154,7 @@ const ChainExamFAQ = () => {
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-6 py-3.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2.5 border ${
                   selectedCategory === category.id
-                    ? "bg-purple-700 text-white shadow-lg border-purple-700 hover:bg-purple-800"
+                    ? "bg-blue-700 text-white shadow-lg border-blue-700 hover:bg-blue-800"
                     : "bg-white text-gray-700 hover:bg-gray-100 border-gray-300 shadow-sm hover:shadow-md"
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -193,7 +193,7 @@ const ChainExamFAQ = () => {
                     {item.question}
                   </span>
                   <ChevronDown
-                    className={`text-purple-600 transition-transform duration-300 flex-shrink-0 ${
+                    className={`text-blue-600 transition-transform duration-300 flex-shrink-0 ${
                       openItems.includes(item.id) ? "rotate-180" : ""
                     }`}
                     size={22}
@@ -230,7 +230,7 @@ const ChainExamFAQ = () => {
           </p>
           <Link to="/Help">
             <motion.button
-              className="bg-gradient-to-r from-purple-700 to-violet-800 text-white px-12 py-4.5 rounded-full font-semibold hover:from-purple-800 hover:to-violet-900 transition-all duration-200 shadow-lg border-2 border-purple-700 hover:border-purple-800 text-base md:text-lg"
+              className="bg-gradient-to-r from-blue-700 to-violet-800 text-white px-12 py-4.5 rounded-full font-semibold hover:from-blue-800 hover:to-violet-900 transition-all duration-200 shadow-lg border-2 border-blue-700 hover:border-blue-800 text-base md:text-lg"
               whileHover={{
                 scale: 1.05,
                 boxShadow: "0 20px 25px -5px rgba(139, 92, 246, 0.4)",

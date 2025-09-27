@@ -313,6 +313,25 @@ public fun t_send_exam(
     transfer::transfer(_student, ctx.sender());
 }
 
+
+public fun t_send_feedback(
+    _corrector: CorrectorCap,
+    grade: u64,
+    exam_id: u64,
+    comment: String,
+    ctx: &mut TxContext,
+){
+    let feedback = Feedback {
+        id: object::new(ctx),
+        grade: grade,
+        exam_id: exam_id,
+        comment: comment,
+    };
+    transfer::public_transfer(feedback, ADMIN_TEST);
+    let CorrectorCap { id } = _corrector;
+    object::delete(id);
+}
+
 #[test]
 fun test_publisher_address_gets_admin_cap() {
     let mut ts = ts::begin(ADMIN_TEST);
@@ -512,6 +531,49 @@ fun test_send_exam(){
 
     // Return
     ts.return_to_sender(exam);
+    ts.return_to_sender(publisher);
+    ts.end();
+}
+
+#[test]
+fun test_send_feedback(){
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
+
+    // Step 3: The Admin sends the student caps, then we pass to the context of the student
+    let mut correctors = vector::empty<address>();
+    vector::push_back(&mut correctors, CORRECTOR_TEST_1);
+    init_correctors(&publisher, admin_cap, correctors, ts.ctx());
+    ts.next_tx(CORRECTOR_TEST_1);
+
+    // Step 4: Test if the student has a cap and take the cap, write the string to be sent
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<CorrectorCap>(CORRECTOR_TEST_1), true);
+    let corrector_cap = ts.take_from_sender<CorrectorCap>();
+    let grade = 6;
+    let exam_id = 0;
+    let comment: String = string::utf8(b"my beautiful comment");
+
+
+    // Step 5: Send the pdf
+    t_send_feedback(corrector_cap, grade, exam_id, comment, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 6: Check if the Admin received the right data 
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<Feedback>(ADMIN_TEST), true);
+    let feedback = ts.take_from_sender<Feedback>();
+    std::unit_test::assert_eq!(feedback.grade, 6);
+    std::unit_test::assert_eq!(feedback.exam_id, 0);
+    std::unit_test::assert_eq!(feedback.comment, comment);
+
+    // Return
+    ts.return_to_sender(feedback);
     ts.return_to_sender(publisher);
     ts.end();
 }

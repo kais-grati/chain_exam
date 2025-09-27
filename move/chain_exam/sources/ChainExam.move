@@ -2,6 +2,7 @@ module chain_exam::ChainExam;
 
 use std::string::{Self, String};
 use sui::package::{Self, Publisher};
+use sui::test_scenario::{Self};
 
 
 
@@ -234,6 +235,16 @@ public fun send_feedback(
     };
     transfer::public_transfer(feedback, ADMIN);
     let CorrectorCap { id } = _corrector;
+    object::delete(id);
+}
+
+
+public fun delete_admin_state(admin_state: AdminState, ctx: &mut TxContext) {
+    // Vérifie que seul l'admin peut supprimer
+    assert!(ADMIN == tx_context::sender(ctx), false);
+
+    // Déstructure l'objet pour récupérer son id
+    let AdminState { id, linkers: _, list_size: _} = admin_state;
     object::delete(id);
 }
 
@@ -626,6 +637,24 @@ fun test_send_to_correctors() {
     ts.return_to_sender(anonymExam3);
 
     ts.end();
+}
+
+#[test]
+fun test_delete_admin_state() {
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Initialisation de l'état admin
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+    
+    // Récupère l'objet AdminState à supprimer
+    let admin_state = ts.take_from_sender<AdminState>();
+    // Appelle la fonction de suppression
+    delete_admin_state(admin_state, ts.ctx());
+    
+    
+    let recup = ts.end();
+    assert!(test_scenario::deleted(&recup).is_empty())
 }
 
 

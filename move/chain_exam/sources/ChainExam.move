@@ -1,4 +1,4 @@
-module counter::ChainExam;
+module chain_exam::ChainExam;
 
 use std::string::String;
 use sui::package::{Self, Publisher};

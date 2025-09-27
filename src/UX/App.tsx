@@ -1,13 +1,11 @@
-import { useCurrentAccount } from "@mysten/dapp-kit";
-import { isValidSuiObjectId } from "@mysten/sui/utils";
-import { Box, Container, Flex, Heading } from "@radix-ui/themes";
 import { Route, Routes } from "react-router-dom";
 import Home from "../UI/pages/Home";
 import Navbar from "../UI/components/Navbar";
 import Dashboard from "../UI/pages/Dashboard";
+import Help from "../UI/pages/Help";
+import About from "../UI/pages/About";
 
 function App() {
-  const currentAccount = useCurrentAccount();
 
   return (
     <>
@@ -15,6 +13,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/Dashboard" element={<Dashboard />} />
+        <Route path="/Help" element={<Help />} />
+        <Route path="/About" element={<About />} />
       </Routes>
     </>
 

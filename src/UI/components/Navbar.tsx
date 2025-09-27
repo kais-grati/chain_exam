@@ -33,7 +33,7 @@ function Navbar() {
             <NavigationMenu.Item className="hidden sm:block">
               <NavigationMenu.Link asChild>
                 <Link
-                  to="/page2"
+                  to="/About"
                   className="px-2 py-2 rounded-xl hover:bg-blue-200 hover:text-black transition"
                 >
                   About
@@ -44,7 +44,7 @@ function Navbar() {
             <NavigationMenu.Item className="hidden sm:block">
               <NavigationMenu.Link asChild>
                 <Link
-                  to="/page3"
+                  to="/Help"
                   className="px-2 py-2 rounded-xl hover:bg-blue-200 hover:text-black transition"
                 >
                   Help
@@ -85,28 +85,28 @@ function Navbar() {
                 {/* Mobile Navigation Links */}
                 <DropdownMenu.Item className="focus:outline-none">
                   <Link
-                    to="/page1"
-                    className="block px-3 py-2 text-sm rounded hover:bg-blue-50 transition w-full text-left"
+                    to="/Dashboard"
+                    className="block px-3 py-2 text-sm text-black rounded hover:bg-blue-50 transition w-full text-left"
                   >
-                    Link1
+                    Dashboard
                   </Link>
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item className="focus:outline-none">
                   <Link
-                    to="/page2"
-                    className="block px-3 py-2 text-sm rounded hover:bg-blue-50 transition w-full text-left"
+                    to="/About"
+                    className="block px-3 py-2 text-sm rounded text-black hover:bg-blue-50 transition w-full text-left"
                   >
-                    Link2
+                    About
                   </Link>
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item className="focus:outline-none">
                   <Link
-                    to="/page3"
-                    className="block px-3 py-2 text-sm rounded hover:bg-blue-50 transition w-full text-left"
+                    to="/Hellp"
+                    className="block px-3 py-2 text-sm rounded text-black hover:bg-blue-50 transition w-full text-left"
                   >
-                    Link3
+                    Help
                   </Link>
                 </DropdownMenu.Item>
 

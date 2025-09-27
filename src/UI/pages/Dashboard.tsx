@@ -1,9 +1,23 @@
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useUserRole } from "../../UX/useUserRole";
+import StudentDashboard from "../components/StudentDashboard";
 
 export default function Dashboard() {
-  const currentAccount = useCurrentAccount();
+  const userRoleData = useUserRole();
 
-  return (
-    currentAccount ? <h1>Dashboard</h1> : <h1>Please log in</h1>
-  );
+  if (userRoleData) {
+    const { role, isLoading, error } = userRoleData;
+
+    if (isLoading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error.message}</p>;
+
+    return (
+      <div>
+        {role === "admin" && <p>Welcome, Admin!</p>}
+        {role === "student" && <StudentDashboard />}
+        {!role && <p>No role assigned</p>}
+      </div>
+    );
+  }
+
+  return <p>No account connected</p>;
 }

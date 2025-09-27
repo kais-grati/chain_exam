@@ -1,20 +1,20 @@
 import { Link } from "react-router-dom";
 import { NavigationMenu, DropdownMenu } from "radix-ui";
+import Logo from "../assets/logo.png";
 
 import { ConnectButton } from "@mysten/dapp-kit";
 
 function Navbar() {
-
   return (
-    <nav className="px-8 py-8 font-lexend font-light">
+    <nav className="px-8 py-8 font-lexend text-xl font-medium">
       <div className="flex items-center justify-between mx-auto min-h-[40px]">
         {/* Left Section: Logo + Navigation Menu */}
         <NavigationMenu.Root className="flex items-center gap-10">
           <NavigationMenu.List className="flex items-center gap-10">
             {/* Logo */}
             <NavigationMenu.Item>
-              <Link to="/" className="font-bold text-lg">
-                Chain<span className="text-blue-600">Exam</span>
+              <Link to="/" className="font-bold">
+                <img src={Logo} alt="ChainExam" className="w-50 h-auto"></img>
               </Link>
             </NavigationMenu.Item>
 

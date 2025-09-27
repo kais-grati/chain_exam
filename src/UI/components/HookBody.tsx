@@ -309,7 +309,7 @@ function HookBody() {
           Ensure fair results with fully anonymous submissions, unbiased grading,<br></br>and a seamless correction process.
           Well suited for Universities and schools. <br></br>
         </h2>
-        <a href="/" className="inline-block px-4 py-3 text-3xl font-lexend rounded-full bg-black text-white hover:bg-blue-950 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
+        <a href="/" className="inline-block px-6 py-4 text-2xl font-lexend rounded-full bg-black text-white hover:bg-blue-950 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
           Get Started now
         </a>
       </div>

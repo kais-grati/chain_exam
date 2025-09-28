@@ -59,15 +59,13 @@ export default function InitTableButton({
 
   return (
     <>
-    <div className="flex justify-center items-center pt-60">
       <button
         onClick={() => setIsOpen(true)}
-        className={buttonClassName || "px-6 py-3 bg-blue-500 hover:bg-blue-900 font-semibold rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 cursor-pointer text-white"}
+        className={buttonClassName || "px-6 py-3 w-64 bg-blue-500 hover:bg-blue-900 font-semibold rounded-lg shadow-lg transition-all justify-center items-center duration-200 flex items-center gap-2 cursor-pointer text-white"}
       >
-        <Wallet className="w-7 h-5" />
+        <Wallet className="w-7 h-5 " />
         {buttonText}
       </button>
-    </div>
 
       <AnimatePresence>
         {isOpen && (

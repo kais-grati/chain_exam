@@ -6,6 +6,7 @@ import {
 import InitTableButton from "../../UX/InitTableButton";
 import { Transaction } from "@mysten/sui/transactions";
 import { useNetworkVariable } from "../../UX/networkConfig";
+import { motion } from "framer-motion";
 import getOwnedObjects from "../../UX/suiQueryUtil";
 import {
   ADMIN_CAP_TYPE,
@@ -102,12 +103,22 @@ export default function AdminDashboard() {
     });
   };
   return (
-    <>
-      <InitTableButton onSubmit={handleInitTable} />
-      <MoveCallButton
-        label={"Send to exams to correctors"}
-        callback={handleSendToCorrectors}
-      ></MoveCallButton>
-    </>
+    <div className=" flex items-center text-center justify-center py-40 overflow-hidden">
+      {/* Multiple Blurred Gradient Circles */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 opacity-20 blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 opacity-25 blur-2xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+      <div className="absolute top-1/2 left-1/2 w-[600px] h-[300px] rounded-full bg-gradient-to-r from-cyan-400 to-blue-400 opacity-15 blur-3xl transform -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{ animationDelay: "2s" }}></div>
+
+      {/* Main Content Container - Flex Column */}
+      <div className="items-center z-10 gap-5 text-center pt-13 flex flex-col w-full max-w-5xl space-y-20">
+      <>
+        <InitTableButton onSubmit={handleInitTable} />
+        <MoveCallButton
+          label={"Send to exams to correctors"}
+          callback={handleSendToCorrectors}
+        ></MoveCallButton>
+      </>
+    </div>
+    </div>
   );
 }

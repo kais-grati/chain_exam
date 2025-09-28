@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Send } from "lucide-react";
+import { motion } from "framer-motion";
+
 
 interface MoveButtonProps {
   label: string;
   callback: () => void;
 }
+
 
 export default function MoveCallButton({
   label,
@@ -31,25 +35,29 @@ export default function MoveCallButton({
   };
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={status === "loading"}
-      className={`px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors
-        ${status === "idle" ? "bg-blue-500 hover:bg-blue-600 text-white" : ""}
-        ${status === "loading" ? "bg-gray-400 cursor-not-allowed text-white" : ""}
-        ${status === "success" ? "bg-green-500 text-white" : ""}
-        ${status === "error" ? "bg-red-500 text-white" : ""}
-      `}
-    >
-      {status === "loading" && <Loader2 className="h-4 w-4 animate-spin" />}
-      {status === "success" && <CheckCircle className="h-4 w-4" />}
-      {status === "error" && <XCircle className="h-4 w-4" />}
-      <span>
-        {status === "idle" && label}
-        {status === "loading" && "Processing..."}
-        {status === "success" && "Success!"}
-        {status === "error" && "Failed"}
-      </span>
-    </button>
+  
+      <button
+        onClick={handleClick}
+        disabled={status === "loading"}
+        className={`w[65] h-12 px-4 py-8  rounded-lg flex justify-center items-center gap-2 font-medium transition-colors
+          ${status === "idle" ? "bg-blue-500 hover:bg-blue-900 text-white" : ""}
+          ${status === "loading" ? "bg-gray-400 cursor-not-allowed text-white" : ""}
+          ${status === "success" ? "bg-green-500 text-white" : ""}
+          ${status === "error" ? "bg-red-500 text-white" : ""}
+        `}
+      >
+        <Send className="w-4 h-4" />
+        {status === "loading" && <Loader2 className="h-4 w-4 animate-spin" />}
+        {status === "success" && <CheckCircle className="h-4 w-4" />}
+        {status === "error" && <XCircle className="h-4 w-4" />}
+        <span>
+          {status === "idle" && label}
+          {status === "loading" && "Processing..."}
+          {status === "success" && "Success!"}
+          {status === "error" && "Failed"}
+        </span>
+      </button>
+    
+    
   );
 }

@@ -25,7 +25,9 @@ First you need to go in [`Chain_Exam/backend`]
 Then run the Python backend with the OCR model:
 
 -**cd backend**
+
 -**pip install -r requirements.txt**
+
 -**python backend.py**
 
 ## 2. Smart Contract (Move)
@@ -36,6 +38,7 @@ Location: [`move/sources/ChainExam.move`](move/sources/ChainExam.move)
 To run tests:
 
 -**cd move**
+
 -**sui move test**
 
 ## 3. React Frontend
@@ -45,10 +48,12 @@ Pages are in: src/UI/pages
 
 What we need to do to start the app:
 -**pnpm install**
+
 -**pnpm dev**
 
 Or if you use yarn:
 -**yarn install**
+
 -**yarn dev**
 
 

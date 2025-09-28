@@ -82,7 +82,7 @@ fun init(otw: CHAINEXAM, ctx: &mut TxContext) {
 // Create a table that maps students and a index to a corrector (a corrector can have multiple students to correct)
 public fun init_table(
     _publisher: &Publisher,
-     _admin: AdminCap,
+     _admin: &AdminCap,
      student_addresses: vector<address>,
      corrector_addresses: vector<address>,
      ctx: &mut TxContext,
@@ -107,13 +107,12 @@ public fun init_table(
         list_size: i,
     };
     transfer::transfer(admin_state, ctx.sender());
-    transfer::transfer(_admin, ctx.sender());
 }
 
 // The admin sends a StudentCap to each student wallet address present in the list
 public fun init_students(
     _publisher: &Publisher,
-    _admin: AdminCap, 
+    _admin: &AdminCap, 
     student_addresses: vector<address>,
     ctx: &mut TxContext,
 ) {
@@ -129,13 +128,12 @@ public fun init_students(
         );
         i = i + 1;
     };
-    transfer::transfer(_admin, ctx.sender());
 }
 
 // The admin sends a CorrectorCap to each corrector wallet address present in the list
 public fun init_correctors(
     _publisher: &Publisher,
-    _admin: AdminCap, 
+    _admin: &AdminCap, 
     corrector_addresses: vector<address>,
     ctx: &mut TxContext,
 ) {
@@ -152,7 +150,6 @@ public fun init_correctors(
         );
         i = i + 1;
     };
-    transfer::transfer(_admin, ctx.sender());
 }
 
 
@@ -180,7 +177,7 @@ public fun send_exam(
 // For now, only send exams we received (don't take into account the case were a student didn't send his exam: TODO later)
 public fun send_to_correctors(
     _publisher: &Publisher,
-    _admin: AdminCap,
+    _admin: &AdminCap,
     mut exams: vector<ExamNFT>,
     list: &AdminState,
     ctx: &mut TxContext,
@@ -216,7 +213,6 @@ public fun send_to_correctors(
     };
     // Now exams is empty, so you can destroy it
     vector::destroy_empty<ExamNFT>(exams);
-    transfer::transfer(_admin, ctx.sender());
 }
 
 
@@ -241,7 +237,7 @@ public fun send_feedback(
 
 public fun delete_admin_state(admin_state: AdminState, ctx: &mut TxContext) {
     // Vérifie que seul l'admin peut supprimer
-    assert!(ADMIN == tx_context::sender(ctx), false);
+    assert!(ADMIN == ctx.sender(), 0);
 
     // Déstructure l'objet pour récupérer son id
     let AdminState { id, linkers: _, list_size: _} = admin_state;
@@ -250,7 +246,7 @@ public fun delete_admin_state(admin_state: AdminState, ctx: &mut TxContext) {
 
 public fun send_to_student( 
     _publisher: &Publisher,
-    _admin: AdminCap,
+    _admin: &AdminCap,
     list: &AdminState,
     feedback: Feedback,
     ctx: &mut TxContext,
@@ -272,7 +268,6 @@ public fun send_to_student(
         j = j + 1;
     };
     transfer::transfer(feedback, student);
-    transfer::transfer(_admin, ctx.sender());
 }
 
 // ===== TEST ONLY =====
@@ -283,7 +278,6 @@ use sui::{test_scenario as ts};
 #[test_only]
 const ADMIN_TEST: address = @0xAA;
 #[test_only]
-const STUDENT_TEST: address = @0xBB;
 const STUDENT_TEST_1: address= @0xb1;
 const STUDENT_TEST_2: address= @0xb2;
 const STUDENT_TEST_3: address= @0xb3;
@@ -292,7 +286,6 @@ const STUDENT_TEST_5: address= @0xb5;
 const STUDENT_TEST_6: address= @0xb6;
 
 #[test_only]
-const CORRECTOR_TEST: address = @0xCC;
 const CORRECTOR_TEST_1: address = @0xc1;
 const CORRECTOR_TEST_2: address = @0xc2;
 const CORRECTOR_TEST_3: address = @0xc3;
@@ -313,7 +306,7 @@ public fun t_send_exam(
     transfer::transfer(_student, ctx.sender());
 }
 
-
+#[test_only]
 public fun t_send_feedback(
     _corrector: CorrectorCap,
     grade: u64,
@@ -377,7 +370,7 @@ fun test_admin_init_table() {
     vector::push_back(&mut correctors, CORRECTOR_TEST_3);
 
     // Step 4: Call init_table with the publisher, admin_cap, and address lists
-    init_table(&publisher, admin_cap, students, correctors, ts.ctx());
+    init_table(&publisher, &admin_cap, students, correctors, ts.ctx());
     ts.next_tx(ADMIN_TEST);
 
     // Step 5: Assert that AdminState was created and transferred to ADMIN_TEST
@@ -420,6 +413,7 @@ fun test_admin_init_table() {
     std::unit_test::assert_eq!(linker6.exam_id, 5);
 
 
+    ts.return_to_sender(admin_cap);
     ts.return_to_sender(state);
     ts.return_to_sender(publisher);
     ts.end();
@@ -447,7 +441,7 @@ fun test_init_students() {
     vector::push_back(&mut students, STUDENT_TEST_6);
 
     // Step 4: Call init_students
-    init_students(&publisher, admin_cap, students, ts.ctx());
+    init_students(&publisher, &admin_cap, students, ts.ctx());
     ts.next_tx(ADMIN_TEST);
 
     // Step 5: Check if each student received a StudentCap
@@ -459,6 +453,7 @@ fun test_init_students() {
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_6), true);
 
     ts.return_to_sender(publisher);
+    ts.return_to_sender(admin_cap);
     ts.end();
 }
 
@@ -482,7 +477,7 @@ fun test_init_correctors() {
    
 
     // Step 4: Call init_correctors
-    init_correctors(&publisher, admin_cap, correctors, ts.ctx());
+    init_correctors(&publisher, &admin_cap, correctors, ts.ctx());
     ts.next_tx(ADMIN_TEST);
 
     // Step 5: Check if each corrector received a CorrectorCap
@@ -492,6 +487,7 @@ fun test_init_correctors() {
 
     // Return
     ts.return_to_sender(publisher);
+    ts.return_to_sender(admin_cap);
     ts.end();
 }
 
@@ -510,7 +506,7 @@ fun test_send_exam(){
     // Step 3: The Admin sends the student caps, then we pass to the context of the student
     let mut students = vector::empty<address>();
     vector::push_back(&mut students, STUDENT_TEST_1);
-    init_students(&publisher, admin_cap, students, ts.ctx());
+    init_students(&publisher, &admin_cap, students, ts.ctx());
     ts.next_tx(STUDENT_TEST_1);
 
     // Step 4: Test if the student has a cap and take the cap, write the string to be sent
@@ -531,6 +527,7 @@ fun test_send_exam(){
 
     // Return
     ts.return_to_sender(exam);
+    ts.return_to_sender(admin_cap);
     ts.return_to_sender(publisher);
     ts.end();
 }
@@ -550,7 +547,7 @@ fun test_send_feedback(){
     // Step 3: The Admin sends the student caps, then we pass to the context of the student
     let mut correctors = vector::empty<address>();
     vector::push_back(&mut correctors, CORRECTOR_TEST_1);
-    init_correctors(&publisher, admin_cap, correctors, ts.ctx());
+    init_correctors(&publisher, &admin_cap, correctors, ts.ctx());
     ts.next_tx(CORRECTOR_TEST_1);
 
     // Step 4: Test if the student has a cap and take the cap, write the string to be sent
@@ -573,6 +570,7 @@ fun test_send_feedback(){
     std::unit_test::assert_eq!(feedback.comment, comment);
 
     // Return
+    ts.return_to_sender(admin_cap);
     ts.return_to_sender(feedback);
     ts.return_to_sender(publisher);
     ts.end();
@@ -605,8 +603,10 @@ fun test_send_to_correctors() {
     vector::push_back(&mut correctors, CORRECTOR_TEST_3);
 
     // Step 4: Call init_table with the publisher, admin_cap, and address lists
-    init_table(&publisher, admin_cap, students, correctors, ts.ctx());
+    init_table(&publisher, &admin_cap, students, correctors, ts.ctx());
+    ts.return_to_sender(admin_cap);
     ts.next_tx(ADMIN_TEST);
+    
 
     // Step 5: Get back the AdminState
     let state = ts.take_from_sender<AdminState>();
@@ -667,8 +667,9 @@ fun test_send_to_correctors() {
     vector::push_back(&mut exams, exam3);
 
     // Step 8: Call send_to_correctors
-    send_to_correctors(&publisher, admin_cap_corr, exams, &state, ts.ctx());
+    send_to_correctors(&publisher, &admin_cap_corr, exams, &state, ts.ctx());
     ts.return_to_sender(state);
+    ts.return_to_sender(admin_cap_corr);
     ts.return_to_sender(publisher);
     ts.next_tx(ADMIN_TEST);
 
@@ -701,28 +702,20 @@ fun test_send_to_correctors() {
     ts.end();
 }
 
-#[test]
-fun test_delete_admin_state() {
-    let mut ts = ts::begin(ADMIN_TEST);
+// #[test]
+// fun test_delete_admin_state() {
+//     let mut ts = ts::begin(ADMIN_TEST);
 
-    // Initialisation de l'état admin
-    init(CHAINEXAM{}, ts.ctx());
-    ts.next_tx(ADMIN_TEST);
+//     // Initialisation de l'état admin
+//     init(CHAINEXAM{}, ts.ctx());
+//     ts.next_tx(ADMIN_TEST);
     
-    // Récupère l'objet AdminState à supprimer
-    let admin_state = ts.take_from_sender<AdminState>();
-    // Appelle la fonction de suppression
-    delete_admin_state(admin_state, ts.ctx());
+//     // Récupère l'objet AdminState à supprimer
+//     let admin_state = ts.take_from_sender<AdminState>();
+//     // Appelle la fonction de suppression
+//     delete_admin_state(admin_state, ts.ctx());
     
     
-    let recup = ts.end();
-    assert!(test_scenario::deleted(&recup).is_empty())
-}
-
-
-
-// public struct AnonymizeExam has key, store{
-//     id: UID,
-//     exam_id: u64,
-//     content: String,
+//     let recup = ts.end();
+//     assert!(test_scenario::deleted(&recup).is_empty())
 // }

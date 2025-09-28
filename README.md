@@ -62,5 +62,7 @@ To be able to use the full functionalities, the user needs to change the ADMIN a
 
 Then, change also the values in the constants.ts file located at [`src/UX`].
 
+Also add an API_KEY.txt at the folder [`backend`] to be able to use the ML algorithm for OCR.
+
 
 

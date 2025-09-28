@@ -1,4 +1,5 @@
 import { useUserRole } from "../../UX/useUserRole";
+import AdminDashboard from "../components/AdminDashboard";
 import StudentDashboard from "../components/StudentDashboard";
 
 export default function Dashboard() {
@@ -12,7 +13,7 @@ export default function Dashboard() {
 
     return (
       <div>
-        {role === "admin" && <p>Welcome, Admin!</p>}
+        {role === "admin" && <AdminDashboard />}
         {role === "student" && <StudentDashboard />}
         {!role && <p>No role assigned</p>}
       </div>

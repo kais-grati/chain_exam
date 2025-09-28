@@ -1,6 +1,10 @@
 import { useState, useRef } from "react";
 import { Upload, X, CheckCircle, Loader2, Send, Edit3 } from "lucide-react";
-import { API_ENDPOINT } from "./constants";
+import { API_ENDPOINT, STUDENT_CAP_TYPE } from "./constants";
+import { Transaction } from "@mysten/sui/transactions";
+import getOwnedObjects from "./suiQueryUtil";
+import { useNetworkVariable } from "./networkConfig";
+import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 
 const sample_result = {
   fileName: "scan.jpg",
@@ -19,6 +23,16 @@ export default function ImageUpload() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [editedText, setEditedText] = useState<string>(sample_result.text);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const packageId = useNetworkVariable("counterPackageId");
+  const {
+    mutate: signAndExecute,
+    isSuccess,
+    isPending,
+  } = useSignAndExecuteTransaction();
+  const studentCapQuery = getOwnedObjects([{ StructType: STUDENT_CAP_TYPE }]);
+  const studentCap =
+    studentCapQuery && studentCapQuery.length > 0 ? studentCapQuery[0] : "";
 
   const handleFileSelect = (file: File | null) => {
     if (!file) return;
@@ -86,7 +100,6 @@ export default function ImageUpload() {
       const response = await fetch(API_ENDPOINT, {
         method: "POST",
         body: formData,
-        // Don't set Content-Type header - let the browser set it for FormData
       });
 
       if (!response.ok) {
@@ -97,7 +110,7 @@ export default function ImageUpload() {
 
       const result = await response.json();
       setUploadResult(result);
-      setEditedText(result.text)
+      setEditedText(result.text);
 
       // clearImage();
     } catch (err) {
@@ -113,16 +126,18 @@ export default function ImageUpload() {
     setIsSubmitting(true);
     setError("");
 
-    try {
-      // TODO: Implement your submit workflow here
-      // This is where you'll send the edited text for final processing
+    try {  
+      const tx = new Transaction();
 
-      // Mock API call for demonstration
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // For now, just show a success message
-      alert("Text submitted successfully! (Implementation pending)");
+      tx.moveCall({
+        target: `${packageId}::ChainExam::send_exam`,
+        arguments: [tx.object(String(studentCap)), tx.pure.string(editedText)],
+      });
+      signAndExecute({
+        transaction: tx,
+      });
     } catch (err) {
+      console.log(err);
       setError("Submit failed. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -214,32 +229,32 @@ export default function ImageUpload() {
       </div>
 
       <div className="pt-5">
-          {/* Error Message */}
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
-          {/* Upload Button */}
-          {selectedImage && !uploadResult && (
-            <button
-              onClick={handleUpload}
-              disabled={isUploading}
-              className="w-full mt-4 px-4 py-2 bg-blue-500  text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing Image...
-                </>
-              ) : (
-                <>
-                  <Upload className="h-4 w-4" />
-                  Process Image
-                </>
-              )}
-            </button>
-          )}
+        {/* Error Message */}
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+        {/* Upload Button */}
+        {selectedImage && !uploadResult && (
+          <button
+            onClick={handleUpload}
+            disabled={isUploading}
+            className="w-full mt-4 px-4 py-2 bg-blue-500  text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Processing Image...
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" />
+                Process Image
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Text Editor */}

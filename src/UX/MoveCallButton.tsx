@@ -39,7 +39,7 @@ export default function MoveCallButton({
       <button
         onClick={handleClick}
         disabled={status === "loading"}
-        className={`w[65] h-12 px-4 py-8  rounded-lg flex justify-center items-center gap-2 font-medium transition-colors
+        className={`w-64 h-12 px-4 py-8  rounded-lg flex justify-center items-center gap-2 font-medium transition-colors
           ${status === "idle" ? "bg-blue-500 hover:bg-blue-900 text-white" : ""}
           ${status === "loading" ? "bg-gray-400 cursor-not-allowed text-white" : ""}
           ${status === "success" ? "bg-green-500 text-white" : ""}

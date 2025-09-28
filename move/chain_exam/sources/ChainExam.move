@@ -15,8 +15,10 @@ const ADMIN: address = @0x123abc;   // TODO: Change the Admin address
 public struct CHAINEXAM has drop {}
 
 
-public struct AdminCap has key {
+public struct ProfessorCap has key {
     id: UID,
+    exam_id: u64,
+    subject: String,
 }
 
 // This cap is one time use during an exam, when you submit your exam it is destroyed
@@ -40,6 +42,7 @@ public struct ExamNFT has key, store {
 public struct AnonymizeExam has key, store{
     id: UID,
     exam_id: u64,
+    copy_id: u64,
     content: String,
 }
 
@@ -47,6 +50,7 @@ public struct Feedback has key, store {
     id: UID,
     grade: u64,
     exam_id: u64,
+    copy_id: u64,
     comment: String, 
 }
 
@@ -54,6 +58,7 @@ public struct Linker has copy, drop, store{
     student: address,
     corrector: address,
     exam_id: u64,
+    copy_id: u64,
 }
 
 
@@ -77,6 +82,15 @@ fun init(otw: CHAINEXAM, ctx: &mut TxContext) {
     // transfer the AdminCap to the publisher wallet
     transfer::transfer(admin_cap, ctx.sender()); 
 }
+
+// Function needed to use Seal, allow access only if it is the publisher
+public fun seal_approve(
+    id: vector<u8>,
+    publisher: &Publisher
+) {
+    assert!(publisher.from_module<CHAINEXAM>(), EWrongPublisher);
+}
+
 
 // Create a table that maps students and a index to a corrector (a corrector can have multiple students to correct)
 public fun init_table(

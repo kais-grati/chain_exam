@@ -269,3 +269,454 @@ public fun send_to_student(
     transfer::transfer(feedback, student);
 }
 
+// ===== TEST ONLY =====
+
+#[test_only]
+use sui::{test_scenario as ts};
+
+#[test_only]
+const ADMIN_TEST: address = @0xAA;
+#[test_only]
+const STUDENT_TEST: address = @0xBB;
+const STUDENT_TEST_1: address= @0xb1;
+const STUDENT_TEST_2: address= @0xb2;
+const STUDENT_TEST_3: address= @0xb3;
+const STUDENT_TEST_4: address= @0xb4;
+const STUDENT_TEST_5: address= @0xb5;
+const STUDENT_TEST_6: address= @0xb6;
+
+#[test_only]
+const CORRECTOR_TEST: address = @0xCC;
+const CORRECTOR_TEST_1: address = @0xc1;
+const CORRECTOR_TEST_2: address = @0xc2;
+const CORRECTOR_TEST_3: address = @0xc3;
+
+#[test_only]
+// Same as send_exam but sends to the AdminTest instead of the Admin
+public fun t_send_exam(
+    _student: StudentCap,
+    content: String,
+    ctx: &mut TxContext,
+) {
+    let nft = ExamNFT {
+        id: object::new(ctx),
+        student: ctx.sender(),
+        content: content, 
+    };
+    transfer::public_transfer(nft, ADMIN_TEST);
+    transfer::transfer(_student, ctx.sender());
+}
+
+#[test_only]
+public fun t_send_feedback(
+    _corrector: CorrectorCap,
+    grade: u64,
+    exam_id: u64,
+    comment: String,
+    ctx: &mut TxContext,
+){
+    let feedback = Feedback {
+        id: object::new(ctx),
+        grade: grade,
+        exam_id: exam_id,
+        comment: comment,
+    };
+    transfer::public_transfer(feedback, ADMIN_TEST);
+    let CorrectorCap { id } = _corrector;
+    object::delete(id);
+}
+
+#[test]
+fun test_publisher_address_gets_admin_cap() {
+    let mut ts = ts::begin(ADMIN_TEST);
+    // 
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<Publisher>(ADMIN_TEST), false);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<AdminCap>(ADMIN_TEST), false);
+
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<Publisher>(ADMIN_TEST), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<AdminCap>(ADMIN_TEST), true);
+
+    // TEST IF THE ADMIN RECEIVED AND ADMIN CAP
+    ts.end();
+}
+
+#[test]
+fun test_admin_init_table() {
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
+
+    // Step 3: Prepare student and corrector address lists
+    let mut students = vector::empty<address>();
+    vector::push_back(&mut students, STUDENT_TEST_1);
+    vector::push_back(&mut students, STUDENT_TEST_2);
+    vector::push_back(&mut students, STUDENT_TEST_3);
+    vector::push_back(&mut students, STUDENT_TEST_4);
+    vector::push_back(&mut students, STUDENT_TEST_5);
+    vector::push_back(&mut students, STUDENT_TEST_6);
+
+
+    let mut correctors = vector::empty<address>();
+    vector::push_back(&mut correctors, CORRECTOR_TEST_1);
+    vector::push_back(&mut correctors, CORRECTOR_TEST_2);
+    vector::push_back(&mut correctors, CORRECTOR_TEST_3);
+
+    // Step 4: Call init_table with the publisher, admin_cap, and address lists
+    init_table(&publisher, &admin_cap, students, correctors, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 5: Assert that AdminState was created and transferred to ADMIN_TEST
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<AdminState>(ADMIN_TEST), true);
+
+    // Step 6: Check if the list in the admin state is correct
+    let state = ts.take_from_sender<AdminState>();
+
+    std::unit_test::assert_eq!(state.list_size, 6);
+    std::unit_test::assert_eq!(vector::length(&state.linkers), 6);
+
+    let linker1 = vector::borrow(&state.linkers, 0);
+    std::unit_test::assert_eq!(linker1.student, STUDENT_TEST_1);
+    std::unit_test::assert_eq!(linker1.corrector, CORRECTOR_TEST_1);
+    std::unit_test::assert_eq!(linker1.exam_id, 0);
+
+    let linker2 = vector::borrow(&state.linkers, 1);
+    std::unit_test::assert_eq!(linker2.student, STUDENT_TEST_2);
+    std::unit_test::assert_eq!(linker2.corrector, CORRECTOR_TEST_2);
+    std::unit_test::assert_eq!(linker2.exam_id, 1);
+
+    let linker3 = vector::borrow(&state.linkers, 2);
+    std::unit_test::assert_eq!(linker3.student, STUDENT_TEST_3);
+    std::unit_test::assert_eq!(linker3.corrector, CORRECTOR_TEST_3);
+    std::unit_test::assert_eq!(linker3.exam_id, 2);
+
+    let linker4 = vector::borrow(&state.linkers, 3);
+    std::unit_test::assert_eq!(linker4.student, STUDENT_TEST_4);
+    std::unit_test::assert_eq!(linker4.corrector, CORRECTOR_TEST_1);
+    std::unit_test::assert_eq!(linker4.exam_id, 3);
+
+    let linker5 = vector::borrow(&state.linkers, 4);
+    std::unit_test::assert_eq!(linker5.student, STUDENT_TEST_5);
+    std::unit_test::assert_eq!(linker5.corrector, CORRECTOR_TEST_2);
+    std::unit_test::assert_eq!(linker5.exam_id, 4);
+
+    let linker6 = vector::borrow(&state.linkers, 5);
+    std::unit_test::assert_eq!(linker6.student, STUDENT_TEST_6);
+    std::unit_test::assert_eq!(linker6.corrector, CORRECTOR_TEST_3);
+    std::unit_test::assert_eq!(linker6.exam_id, 5);
+
+
+    ts.return_to_sender(state);
+    ts.return_to_sender(publisher);
+    ts.end();
+}
+
+#[test]
+fun test_init_students() {
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
+
+    // Step 3: Prepare student address lists
+    let mut students = vector::empty<address>();
+    vector::push_back(&mut students, STUDENT_TEST_1);
+    vector::push_back(&mut students, STUDENT_TEST_2);
+    vector::push_back(&mut students, STUDENT_TEST_3);
+    vector::push_back(&mut students, STUDENT_TEST_4);
+    vector::push_back(&mut students, STUDENT_TEST_5);
+    vector::push_back(&mut students, STUDENT_TEST_6);
+
+    // Step 4: Call init_students
+    init_students(&publisher, &admin_cap, students, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 5: Check if each student received a StudentCap
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_1), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_2), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_3), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_4), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_5), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_6), true);
+
+    ts.return_to_sender(publisher);
+    ts.end();
+}
+
+#[test]
+fun test_init_correctors() {
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
+
+    // Step 3: Prepare student address lists
+    let mut correctors = vector::empty<address>();
+    vector::push_back(&mut correctors, CORRECTOR_TEST_1);
+    vector::push_back(&mut correctors, CORRECTOR_TEST_2);
+    vector::push_back(&mut correctors, CORRECTOR_TEST_3);
+   
+
+    // Step 4: Call init_correctors
+    init_correctors(&publisher, &admin_cap, correctors, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 5: Check if each corrector received a CorrectorCap
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<CorrectorCap>(CORRECTOR_TEST_1), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<CorrectorCap>(CORRECTOR_TEST_2), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<CorrectorCap>(CORRECTOR_TEST_3), true);
+
+    // Return
+    ts.return_to_sender(publisher);
+    ts.end();
+}
+
+#[test]
+fun test_send_exam(){
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
+
+    // Step 3: The Admin sends the student caps, then we pass to the context of the student
+    let mut students = vector::empty<address>();
+    vector::push_back(&mut students, STUDENT_TEST_1);
+    init_students(&publisher, &admin_cap, students, ts.ctx());
+    ts.next_tx(STUDENT_TEST_1);
+
+    // Step 4: Test if the student has a cap and take the cap, write the string to be sent
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_1), true);
+    let student_cap = ts.take_from_sender<StudentCap>();
+    let text: String = string::utf8(b"my beautiful pdf");
+
+
+    // Step 5: Send the pdf
+    t_send_exam(student_cap, text, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 6: Check if the Admin received the right data 
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<ExamNFT>(ADMIN_TEST), true);
+    let exam = ts.take_from_sender<ExamNFT>();
+    std::unit_test::assert_eq!(exam.student, STUDENT_TEST_1);
+    std::unit_test::assert_eq!(exam.content, text);
+
+    // Return
+    ts.return_to_sender(exam);
+    ts.return_to_sender(publisher);
+    ts.end();
+}
+
+#[test]
+fun test_send_feedback(){
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
+
+    // Step 3: The Admin sends the student caps, then we pass to the context of the student
+    let mut correctors = vector::empty<address>();
+    vector::push_back(&mut correctors, CORRECTOR_TEST_1);
+    init_correctors(&publisher, &admin_cap, correctors, ts.ctx());
+    ts.next_tx(CORRECTOR_TEST_1);
+
+    // Step 4: Test if the student has a cap and take the cap, write the string to be sent
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<CorrectorCap>(CORRECTOR_TEST_1), true);
+    let corrector_cap = ts.take_from_sender<CorrectorCap>();
+    let grade = 6;
+    let exam_id = 0;
+    let comment: String = string::utf8(b"my beautiful comment");
+
+
+    // Step 5: Send the pdf
+    t_send_feedback(corrector_cap, grade, exam_id, comment, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 6: Check if the Admin received the right data 
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<Feedback>(ADMIN_TEST), true);
+    let feedback = ts.take_from_sender<Feedback>();
+    std::unit_test::assert_eq!(feedback.grade, 6);
+    std::unit_test::assert_eq!(feedback.exam_id, 0);
+    std::unit_test::assert_eq!(feedback.comment, comment);
+
+    // Return
+    ts.return_to_sender(feedback);
+    ts.return_to_sender(publisher);
+    ts.end();
+}
+
+#[test]
+fun test_send_to_correctors() {
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Step 1: Initialize the contract, which gives AdminCap to ADMIN_TEST
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 2: Get the Publisher and AdminCap objects for ADMIN_TEST
+    let publisher = ts.take_from_sender<Publisher>();
+    let admin_cap = ts.take_from_sender<AdminCap>();
+
+    // Step 3: Prepare student and corrector address lists
+    let mut students = vector::empty<address>();
+    vector::push_back(&mut students, STUDENT_TEST_1);
+    vector::push_back(&mut students, STUDENT_TEST_2);
+    vector::push_back(&mut students, STUDENT_TEST_3);
+    vector::push_back(&mut students, STUDENT_TEST_4);
+    vector::push_back(&mut students, STUDENT_TEST_5);
+    vector::push_back(&mut students, STUDENT_TEST_6);
+
+    let mut correctors = vector::empty<address>();
+    vector::push_back(&mut correctors, CORRECTOR_TEST_1);
+    vector::push_back(&mut correctors, CORRECTOR_TEST_2);
+    vector::push_back(&mut correctors, CORRECTOR_TEST_3);
+
+    // Step 4: Call init_table with the publisher, admin_cap, and address lists
+    init_table(&publisher, &admin_cap, students, correctors, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 5: Get back the AdminState
+    let state = ts.take_from_sender<AdminState>();
+    let admin_cap_corr = ts.take_from_sender<AdminCap>();
+
+    // Step 6: Test the state of the admin
+    std::unit_test::assert_eq!(state.list_size, 6);
+    std::unit_test::assert_eq!(vector::length(&state.linkers), 6);
+
+    let linker1 = vector::borrow(&state.linkers, 0);
+    std::unit_test::assert_eq!(linker1.student, STUDENT_TEST_1);
+    std::unit_test::assert_eq!(linker1.corrector, CORRECTOR_TEST_1);
+    std::unit_test::assert_eq!(linker1.exam_id, 0);
+
+    let linker2 = vector::borrow(&state.linkers, 1);
+    std::unit_test::assert_eq!(linker2.student, STUDENT_TEST_2);
+    std::unit_test::assert_eq!(linker2.corrector, CORRECTOR_TEST_2);
+    std::unit_test::assert_eq!(linker2.exam_id, 1);
+
+    let linker3 = vector::borrow(&state.linkers, 2);
+    std::unit_test::assert_eq!(linker3.student, STUDENT_TEST_3);
+    std::unit_test::assert_eq!(linker3.corrector, CORRECTOR_TEST_3);
+    std::unit_test::assert_eq!(linker3.exam_id, 2);
+
+    let linker4 = vector::borrow(&state.linkers, 3);
+    std::unit_test::assert_eq!(linker4.student, STUDENT_TEST_4);
+    std::unit_test::assert_eq!(linker4.corrector, CORRECTOR_TEST_1);
+    std::unit_test::assert_eq!(linker4.exam_id, 3);
+
+    let linker5 = vector::borrow(&state.linkers, 4);
+    std::unit_test::assert_eq!(linker5.student, STUDENT_TEST_5);
+    std::unit_test::assert_eq!(linker5.corrector, CORRECTOR_TEST_2);
+    std::unit_test::assert_eq!(linker5.exam_id, 4);
+
+    let linker6 = vector::borrow(&state.linkers, 5);
+    std::unit_test::assert_eq!(linker6.student, STUDENT_TEST_6);
+    std::unit_test::assert_eq!(linker6.corrector, CORRECTOR_TEST_3);
+    std::unit_test::assert_eq!(linker6.exam_id, 5);
+    ts.next_tx(ADMIN_TEST);
+
+
+    // Step 7: Create the exams to be distributed that the Admin already "owns"
+    let mut exams = vector::empty<ExamNFT>();
+
+    let fakeUID_1 = ts::new_object(&mut ts);
+    let text1: String = string::utf8(b"pdf1");
+    let exam1 = ExamNFT{id: fakeUID_1, student: STUDENT_TEST_1, content: text1};
+    vector::push_back(&mut exams, exam1);
+
+    let fakeUID_2 = ts::new_object(&mut ts);
+    let text2: String = string::utf8(b"pdf2");
+    let exam2 = ExamNFT{id: fakeUID_2, student: STUDENT_TEST_2, content: text2};
+    vector::push_back(&mut exams, exam2);
+
+    let fakeUID_3 = ts::new_object(&mut ts);
+    let text3: String = string::utf8(b"pdf3");
+    let exam3 = ExamNFT{id: fakeUID_3, student: STUDENT_TEST_3, content: text3};
+    vector::push_back(&mut exams, exam3);
+
+    // Step 8: Call send_to_correctors
+    send_to_correctors(&publisher, &admin_cap_corr, exams, &state, ts.ctx());
+    ts.return_to_sender(state);
+    ts.return_to_sender(publisher);
+    ts.next_tx(ADMIN_TEST);
+
+    // Step 9: Check if the correctors received the AnonymizeExam and that the students received back their exam
+    //std::unit_test::assert_eq!(ts::has_most_recent_for_address<ExamNFT>(STUDENT_TEST_1), true);
+
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_1), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_2), true);
+    std::unit_test::assert_eq!(ts::has_most_recent_for_address<AnonymizeExam>(CORRECTOR_TEST_3), true);
+    ts.next_tx(CORRECTOR_TEST_1);
+
+    // Step 10: Check if each corrector received the right copies to grade
+    let anonymExam1 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam1.exam_id, 0);
+    std::unit_test::assert_eq!(anonymExam1.content, text1);
+    ts.return_to_sender(anonymExam1);
+    ts.next_tx(CORRECTOR_TEST_2);
+
+    let anonymExam2 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam2.exam_id, 1);
+    std::unit_test::assert_eq!(anonymExam2.content, text2);
+    ts.return_to_sender(anonymExam2);
+    ts.next_tx(CORRECTOR_TEST_3);
+
+    let anonymExam3 = ts.take_from_sender<AnonymizeExam>();
+    std::unit_test::assert_eq!(anonymExam3.exam_id, 2);
+    std::unit_test::assert_eq!(anonymExam3.content, text3);
+    ts.return_to_sender(anonymExam3);
+
+    ts.end();
+}
+
+#[test]
+fun test_delete_admin_state() {
+    let mut ts = ts::begin(ADMIN_TEST);
+
+    // Initialisation de l'état admin
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
+    
+    // Récupère l'objet AdminState à supprimer
+    let admin_state = ts.take_from_sender<AdminState>();
+    // Appelle la fonction de suppression
+    delete_admin_state(admin_state, ts.ctx());
+    
+    
+    let recup = ts.end();
+    assert!(test_scenario::deleted(&recup).is_empty())
+}
+
+
+
+// public struct AnonymizeExam has key, store{
+//     id: UID,
+//     exam_id: u64,
+//     content: String,
+// }

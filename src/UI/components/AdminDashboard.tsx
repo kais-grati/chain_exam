@@ -6,12 +6,12 @@ import {
 import InitTableButton from "../../UX/InitTableButton";
 import { Transaction } from "@mysten/sui/transactions";
 import { useNetworkVariable } from "../../UX/networkConfig";
-import { motion } from "framer-motion";
-import getOwnedObjects from "../../UX/suiQueryUtil";
+import {getOwnedObjects} from "../../UX/suiQueryUtil";
 import {
   ADMIN_CAP_TYPE,
   ADMIN_STATE_TYPE,
   EXAM_NFT_TYPE,
+  FEEDBACK_TYPE,
   PUBLISHER_OBJECT,
 } from "../../UX/constants";
 import MoveCallButton from "../../UX/MoveCallButton";
@@ -37,12 +37,13 @@ export default function AdminDashboard() {
   const examsQuery = getOwnedObjects([{ StructType: EXAM_NFT_TYPE }]);
   const exams = examsQuery && examsQuery.length > 0 ? examsQuery : [];
   const adminStateQuery = getOwnedObjects([{ StructType: ADMIN_STATE_TYPE }]);
-  const adminState = adminStateQuery && adminStateQuery.length > 0 ? adminStateQuery[0] : "";
+  const adminState =
+    adminStateQuery && adminStateQuery.length > 0 ? adminStateQuery[0] : "";
+  const feedbackQuery = getOwnedObjects([{StructType: FEEDBACK_TYPE}])
+  const feedback = feedbackQuery && feedbackQuery.length > 0 ? feedbackQuery[0] : ""
 
   const handleSendToCorrectors = async () => {
     const tx = new Transaction();
-    console.log("object")
-    console.log(adminState);
 
     tx.moveCall({
       target: `${packageId}::ChainExam::send_to_correctors`,
@@ -53,7 +54,23 @@ export default function AdminDashboard() {
           type: EXAM_NFT_TYPE,
           elements: exams.map((exam) => tx.object(String(exam))),
         }),
-        tx.object(adminState),
+        tx.object(String(adminState)),
+      ],
+    });
+
+    signAndExecute({ transaction: tx });
+  };
+
+  const handleSendToStudents = async () => {
+    const tx = new Transaction();
+
+    tx.moveCall({
+      target: `${packageId}::ChainExam::send_to_student`,
+      arguments: [
+        tx.object(String(publisherObj)),
+        tx.object(String(adminCap)),
+        tx.object(String(adminState)),
+        tx.object(String(feedback))
       ],
     });
 
@@ -114,11 +131,17 @@ export default function AdminDashboard() {
       <>
         <InitTableButton onSubmit={handleInitTable} />
         <MoveCallButton
-          label={"Send to exams to correctors"}
+          label={"Send exams to correctors"}
           callback={handleSendToCorrectors}
         ></MoveCallButton>
+    <MoveCallButton
+      label={"Send grades to students"}
+      callback={handleSendToStudents}
+    ></MoveCallButton>
       </>
     </div>
     </div>
+    
+
   );
 }

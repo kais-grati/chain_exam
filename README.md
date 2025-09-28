@@ -6,13 +6,13 @@ The goal of this project is to leverage the **Sui blockchain** to build a decent
 
 ---
 
-## ✨ Features
+##  Features
 
 - **Exam submission**: Students can securely submit exams as digital assets on Sui.  
 - **Access control rights system**: Students and Correctors have a small set of functions they have the right to call  
-- 🧑‍🏫 **Role management**: Admins, students, and correctors each receive capability objects (`Cap`) that define their permissions.  
-- 📊 **End-to-end workflow**: From exam upload, anonymization, grading, to student feedback distribution.  
-- 🌐 **Different Languages**: Python backend, Sui Move smart contracts, and a React/TypeScript frontend.  
+-  **Role management**: Admins, students, and correctors each receive capability objects (`Cap`) that define their permissions.  
+-  **End-to-end workflow**: From exam upload, anonymization, grading, to student feedback distribution.  
+-  **Different Languages**: Python backend, Sui Move smart contracts, and a React/TypeScript frontend.  
 
 ---
 

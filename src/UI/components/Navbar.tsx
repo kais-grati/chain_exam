@@ -103,7 +103,7 @@ function Navbar() {
 
                 <DropdownMenu.Item className="focus:outline-none">
                   <Link
-                    to="/Hellp"
+                    to="/Help"
                     className="block px-3 py-2 text-sm rounded text-black hover:bg-blue-50 transition w-full text-left"
                   >
                     Help

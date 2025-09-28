@@ -15,4 +15,7 @@ Here are the different steps to start using the project
 # 2: Smart Contract in Move
     The smart contract in move is the main piece of code of the project because the theme of this hackaton was to code in Sui, you can look at it in Chain_Exam/move/sources/ChainExam.move
 
-# 3: 
+# 3: React Frontend/Backend
+    The majority of our code is in TypeScript and the main pages are present in the Chain_Exam/src/UI/pages folder
+
+    [pnpm import or yarn import]

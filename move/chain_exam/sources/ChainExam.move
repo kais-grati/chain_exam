@@ -2,14 +2,13 @@ module chain_exam::ChainExam;
 
 use std::string::{Self, String};
 use sui::package::{Self, Publisher};
-use sui::test_scenario::{Self};
 
 
 
 const EWrongPublisher: u64 = 1;
 
 // The address of the admin/publisher
-const ADMIN: address = @0x123abc;   // TODO: Change the Admin address
+const ADMIN: address = @0x73ad4cc938ae2752331f5b9c4bacfc3d92be0ba5a1cd0f739322af1505c3ea04;   // TODO: Change the Admin address
 
 
 // One time witness for the Admin
@@ -278,6 +277,7 @@ use sui::{test_scenario as ts};
 #[test_only]
 const ADMIN_TEST: address = @0xAA;
 #[test_only]
+const STUDENT_TEST: address = @0xBB;
 const STUDENT_TEST_1: address= @0xb1;
 const STUDENT_TEST_2: address= @0xb2;
 const STUDENT_TEST_3: address= @0xb3;
@@ -286,6 +286,7 @@ const STUDENT_TEST_5: address= @0xb5;
 const STUDENT_TEST_6: address= @0xb6;
 
 #[test_only]
+const CORRECTOR_TEST: address = @0xCC;
 const CORRECTOR_TEST_1: address = @0xc1;
 const CORRECTOR_TEST_2: address = @0xc2;
 const CORRECTOR_TEST_3: address = @0xc3;
@@ -413,7 +414,6 @@ fun test_admin_init_table() {
     std::unit_test::assert_eq!(linker6.exam_id, 5);
 
 
-    ts.return_to_sender(admin_cap);
     ts.return_to_sender(state);
     ts.return_to_sender(publisher);
     ts.end();
@@ -453,7 +453,6 @@ fun test_init_students() {
     std::unit_test::assert_eq!(ts::has_most_recent_for_address<StudentCap>(STUDENT_TEST_6), true);
 
     ts.return_to_sender(publisher);
-    ts.return_to_sender(admin_cap);
     ts.end();
 }
 
@@ -487,7 +486,6 @@ fun test_init_correctors() {
 
     // Return
     ts.return_to_sender(publisher);
-    ts.return_to_sender(admin_cap);
     ts.end();
 }
 
@@ -527,7 +525,6 @@ fun test_send_exam(){
 
     // Return
     ts.return_to_sender(exam);
-    ts.return_to_sender(admin_cap);
     ts.return_to_sender(publisher);
     ts.end();
 }
@@ -570,7 +567,6 @@ fun test_send_feedback(){
     std::unit_test::assert_eq!(feedback.comment, comment);
 
     // Return
-    ts.return_to_sender(admin_cap);
     ts.return_to_sender(feedback);
     ts.return_to_sender(publisher);
     ts.end();
@@ -604,9 +600,7 @@ fun test_send_to_correctors() {
 
     // Step 4: Call init_table with the publisher, admin_cap, and address lists
     init_table(&publisher, &admin_cap, students, correctors, ts.ctx());
-    ts.return_to_sender(admin_cap);
     ts.next_tx(ADMIN_TEST);
-    
 
     // Step 5: Get back the AdminState
     let state = ts.take_from_sender<AdminState>();
@@ -669,7 +663,6 @@ fun test_send_to_correctors() {
     // Step 8: Call send_to_correctors
     send_to_correctors(&publisher, &admin_cap_corr, exams, &state, ts.ctx());
     ts.return_to_sender(state);
-    ts.return_to_sender(admin_cap_corr);
     ts.return_to_sender(publisher);
     ts.next_tx(ADMIN_TEST);
 
@@ -702,20 +695,28 @@ fun test_send_to_correctors() {
     ts.end();
 }
 
-// #[test]
-// fun test_delete_admin_state() {
-//     let mut ts = ts::begin(ADMIN_TEST);
+#[test]
+fun test_delete_admin_state() {
+    let mut ts = ts::begin(ADMIN_TEST);
 
-//     // Initialisation de l'état admin
-//     init(CHAINEXAM{}, ts.ctx());
-//     ts.next_tx(ADMIN_TEST);
+    // Initialisation de l'état admin
+    init(CHAINEXAM{}, ts.ctx());
+    ts.next_tx(ADMIN_TEST);
     
-//     // Récupère l'objet AdminState à supprimer
-//     let admin_state = ts.take_from_sender<AdminState>();
-//     // Appelle la fonction de suppression
-//     delete_admin_state(admin_state, ts.ctx());
+    // Récupère l'objet AdminState à supprimer
+    let admin_state = ts.take_from_sender<AdminState>();
+    // Appelle la fonction de suppression
+    delete_admin_state(admin_state, ts.ctx());
     
     
-//     let recup = ts.end();
-//     assert!(test_scenario::deleted(&recup).is_empty())
+    let recup = ts.end();
+    assert!(test_scenario::deleted(&recup).is_empty())
+}
+
+
+
+// public struct AnonymizeExam has key, store{
+//     id: UID,
+//     exam_id: u64,
+//     content: String,
 // }

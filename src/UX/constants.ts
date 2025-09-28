@@ -1,14 +1,16 @@
 export const DEVNET_COUNTER_PACKAGE_ID = "0xTODO";
-export const TESTNET_COUNTER_PACKAGE_ID =
+export const PACKAGE_ID =
   "0x4ebf993c0216ba7857cdc06e003129ae323a57a195b80ad04dc95a4ce2d63909";
 export const MAINNET_COUNTER_PACKAGE_ID = "0xTODO";
 
 export const ADMIN_CAP_TYPE =
-  "0x4ebf993c0216ba7857cdc06e003129ae323a57a195b80ad04dc95a4ce2d63909::ChainExam::AdminCap";
+  PACKAGE_ID + "::ChainExam::AdminCap";
 export const STUDENT_CAP_TYPE =
-  "0x4ebf993c0216ba7857cdc06e003129ae323a57a195b80ad04dc95a4ce2d63909::ChainExam::StudentCap";
+  PACKAGE_ID + "::ChainExam::StudentCap";
 export const CORRECTOR_CAP_TYPE =
-  "0x4ebf993c0216ba7857cdc06e003129ae323a57a195b80ad04dc95a4ce2d63909::ChainExam::CorrectorCap";
+  PACKAGE_ID + "::ChainExam::CorrectorCap";
+export const ADMIN_STATE_TYPE = PACKAGE_ID + "::ChainExam::AdminState"
+export const EXAM_NFT_TYPE = PACKAGE_ID + "::ChainExam::ExamNFT"
 export const PUBLISHER_OBJECT = "0x2::package::Publisher";
 export const ALL_CAPS = [
   { StructType: ADMIN_CAP_TYPE },

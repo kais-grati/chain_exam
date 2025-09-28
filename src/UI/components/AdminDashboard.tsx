@@ -7,7 +7,13 @@ import InitTableButton from "../../UX/InitTableButton";
 import { Transaction } from "@mysten/sui/transactions";
 import { useNetworkVariable } from "../../UX/networkConfig";
 import getOwnedObjects from "../../UX/suiQueryUtil";
-import { ADMIN_CAP_TYPE, PUBLISHER_OBJECT } from "../../UX/constants";
+import {
+  ADMIN_CAP_TYPE,
+  ADMIN_STATE_TYPE,
+  EXAM_NFT_TYPE,
+  PUBLISHER_OBJECT,
+} from "../../UX/constants";
+import MoveCallButton from "../../UX/MoveCallButton";
 
 export default function AdminDashboard() {
   const account = useCurrentAccount();
@@ -19,7 +25,6 @@ export default function AdminDashboard() {
     isPending,
   } = useSignAndExecuteTransaction();
 
-
   const adminCapQuery = getOwnedObjects([{ StructType: ADMIN_CAP_TYPE }]);
   const adminCap =
     adminCapQuery && adminCapQuery.length > 0 ? adminCapQuery[0] : "";
@@ -28,16 +33,41 @@ export default function AdminDashboard() {
     publisherObjQuery && publisherObjQuery.length > 0
       ? publisherObjQuery[0]
       : "";
+  const examsQuery = getOwnedObjects([{ StructType: EXAM_NFT_TYPE }]);
+  const exams = examsQuery && examsQuery.length > 0 ? examsQuery : [];
+  const adminStateQuery = getOwnedObjects([{ StructType: ADMIN_STATE_TYPE }]);
+  const adminState = adminStateQuery && adminStateQuery.length > 0 ? adminStateQuery[0] : "";
+
+  const handleSendToCorrectors = async () => {
+    const tx = new Transaction();
+    console.log("object")
+    console.log(adminState);
+
+    tx.moveCall({
+      target: `${packageId}::ChainExam::send_to_correctors`,
+      arguments: [
+        tx.object(String(publisherObj)),
+        tx.object(String(adminCap)),
+        tx.makeMoveVec({
+          type: EXAM_NFT_TYPE,
+          elements: exams.map((exam) => tx.object(String(exam))),
+        }),
+        tx.object(adminState),
+      ],
+    });
+
+    signAndExecute({ transaction: tx });
+  };
 
   const handleInitTable = async (
     studentAddresses: string[],
     correctorAddresses: string[],
   ) => {
     const tx = new Transaction();
-    console.log(publisherObj)
-    console.log(adminCap)
-    console.log(studentAddresses)
-    console.log(correctorAddresses)
+    console.log(publisherObj);
+    console.log(adminCap);
+    console.log(studentAddresses);
+    console.log(correctorAddresses);
 
     tx.moveCall({
       target: `${packageId}::ChainExam::init_table`,
@@ -58,13 +88,12 @@ export default function AdminDashboard() {
       ],
     });
 
-   tx.moveCall({
+    tx.moveCall({
       target: `${packageId}::ChainExam::init_correctors`,
       arguments: [
         tx.object(String(publisherObj)),
         tx.object(String(adminCap)),
         tx.pure.vector("address", correctorAddresses),
-
       ],
     });
 
@@ -72,5 +101,13 @@ export default function AdminDashboard() {
       transaction: tx,
     });
   };
-  return <InitTableButton onSubmit={handleInitTable} />;
+  return (
+    <>
+      <InitTableButton onSubmit={handleInitTable} />
+      <MoveCallButton
+        label={"Send to exams to correctors"}
+        callback={handleSendToCorrectors}
+      ></MoveCallButton>
+    </>
+  );
 }

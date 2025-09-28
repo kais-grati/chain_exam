@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Upload, X, CheckCircle, Loader2, Send, Edit3 } from "lucide-react";
 import { API_ENDPOINT, STUDENT_CAP_TYPE } from "./constants";
 import { Transaction } from "@mysten/sui/transactions";
-import getOwnedObjects from "./suiQueryUtil";
+import {getOwnedObjects} from "./suiQueryUtil";
 import { useNetworkVariable } from "./networkConfig";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 

@@ -11,7 +11,7 @@ export default function Footer() {
       className="bg-gray-900 text-gray-200 py-7 px-4 text-center"
     >
         <h2 
-        className="text-2xl font-bold font-serif   mb-2 cursor-pointer"
+        className="text-2xl font-bold font-lexer   mb-2 cursor-pointer"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         >
           Chain Exam

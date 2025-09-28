@@ -1,6 +1,6 @@
 import { useCurrentAccount, useSuiClientQuery } from "@mysten/dapp-kit";
 
-export default function getOwnedObjects(obj: { StructType: string }[]) {
+export function getOwnedObjects(obj: { StructType: string }[]) {
   const account = useCurrentAccount();
 
   const { data, isLoading, error } = useSuiClientQuery(
@@ -10,7 +10,7 @@ export default function getOwnedObjects(obj: { StructType: string }[]) {
       filter: {
         MatchAny: obj,
       },
-      options: { showType: true },
+      options: { showType: true, showContent: true },
     },
     {
       enabled: !!account,
@@ -22,3 +22,23 @@ export default function getOwnedObjects(obj: { StructType: string }[]) {
   return null
 
 }
+
+export function getObjectContent(structTypes: { StructType: string }[]) {
+  const account = useCurrentAccount();
+
+  const { data, isLoading, error } = useSuiClientQuery(
+    "getOwnedObjects",
+    {
+      owner: account?.address ?? "",
+      filter: { MatchAny: structTypes },
+      options: { showContent: true },
+    },
+    { enabled: !!account }
+  );
+
+  const contents =
+    data?.data?.map((obj) => (obj.data?.content as any)?.fields) || [];
+
+  return { contents, isLoading, error };
+}
+

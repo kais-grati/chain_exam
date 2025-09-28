@@ -13,15 +13,19 @@ export default function Dashboard() {
     if (error) return <p>Error: {error.message}</p>;
 
     return (
-      <div className="flex flex-col items-center justify-center">
-        {role === "admin" && <AdminDashboard />}
-        {role === "student" && <StudentDashboard canUpload={true} />}
-        {role === "corrector" && <CorrectorDashboard />}
-        {role === "vo_student" && <StudentDashboard canUpload={false} />}
-        {!role && <p>No role assigned</p>}
-      </div>
+      <>
+        <div className="flex flex-col items-center justify-center">
+          {role === "admin" && <AdminDashboard />}
+          {role === "corrector" && <CorrectorDashboard />}
+          {!role && <p>No role assigned</p>}
+        </div>
+        <div>
+          {role === "student" && <StudentDashboard canUpload={true} />}
+          {role === "vo_student" && <StudentDashboard canUpload={false} />}
+        </div>
+      </>
     );
   }
 
-  return <p>No account connected</p>;
+  return <p className="flex justify-center font-bold">No account connected</p>;
 }

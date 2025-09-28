@@ -13,7 +13,7 @@ export default function StudentDashboard({ canUpload }: StudentDashboardProps) {
     <div className="flex flex-col items-center space-y-6">
       {canUpload && <ImageUpload />}
 
-      <div className="w-full max-w-xl">
+      <div className=" flex flex-col pt-10 items-center justify-center w-full max-w-xl">
         <h2 className="text-2xl font-semibold mb-4">Feedback Received</h2>
         {feedback.contents && feedback.contents.length > 0 ? (
           <ul className="space-y-4">
@@ -33,7 +33,7 @@ export default function StudentDashboard({ canUpload }: StudentDashboardProps) {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No feedback available yet.</p>
+          <p className="text-gray-500 ">No feedback available yet.</p>
         )}
       </div>
     </div>

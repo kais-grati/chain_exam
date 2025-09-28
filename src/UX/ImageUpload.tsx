@@ -6,22 +6,17 @@ import {getOwnedObjects} from "./suiQueryUtil";
 import { useNetworkVariable } from "./networkConfig";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 
-const sample_result = {
-  fileName: "scan.jpg",
-  fileSize: "520022",
-  success: true,
-  text: "Question 1: La connection manuelle des examens est lente, coûteuse et\nparfois biaisée. Un correcteur peut être influencé par\nbe\nmom\nde l'étudiant où\nSon écriture. De plus, d'autres problèmes majeurs sont récurrents\nComme la perte de copies, le favoritisme ou la modification des\nmotes.\nla\nQuestion 2: Grâce à ses\npropriétés d'immutabilité et de traçabilité, lu\nblockchain enregistre chaque étape : scan de la copie, anonymisation,\ndistribution aux correcteurs et mote finale. Sur SUI, chaque opération\ndevient une transaction vérifiable. Resultat: aucune\nfraude possible,\ntransparence totale et con\nconfiance assurée\nQuestion 3: Avantages pour les étudiants sont l'anonymat garanti, l'équité et\nla confiance dans le résultat. Les avantages pour les professeurs sont du\ngain de temps, moins de\nLes avantages pour\npaperasse, archive automatique et plus encore\nl'université sont une réduction des couûts, une sécurité\naccrue (pas de vol, perte ou manipulation des copies), réputation innovante et\nmodernisé vis-à-vis du public, une équité entre les étudiants\ndémontrable et enfin\nune scalabilité améliorée.\nqui\nest",
-};
+
 
 export default function ImageUpload() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [uploadResult, setUploadResult] = useState<any>(sample_result);
+  const [uploadResult, setUploadResult] = useState<any>("");
   const [error, setError] = useState<string>("");
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [editedText, setEditedText] = useState<string>(sample_result.text);
+  const [editedText, setEditedText] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const packageId = useNetworkVariable("counterPackageId");

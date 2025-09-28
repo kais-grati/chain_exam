@@ -8,7 +8,7 @@ use sui::package::{Self, Publisher};
 const EWrongPublisher: u64 = 1;
 
 // The address of the admin/publisher
-const ADMIN: address = @0x73ad4cc938ae2752331f5b9c4bacfc3d92be0ba5a1cd0f739322af1505c3ea04;   // TODO: Change the Admin address
+const ADMIN: address = @0xec207f7f9ae5fb6d9224acb83198a9a63c2e710d9200b5945911bb170198f0b7;   // TODO: Change the Admin address
 
 
 // One time witness for the Admin

@@ -1,6 +1,6 @@
 export const DEVNET_COUNTER_PACKAGE_ID = "0xTODO";
 export const PACKAGE_ID =
-  "0x4ebf993c0216ba7857cdc06e003129ae323a57a195b80ad04dc95a4ce2d63909";
+  "0x17d8f4851a0345f2e6a9959cc43c4cbfb4e35da27cf5d31be63602377d67028b";
 export const MAINNET_COUNTER_PACKAGE_ID = "0xTODO";
 
 export const ADMIN_CAP_TYPE = PACKAGE_ID + "::ChainExam::AdminCap";

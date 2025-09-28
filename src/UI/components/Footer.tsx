@@ -63,7 +63,7 @@ export default function Footer() {
             <MapPin className="w-7 h-7 text-indigo-400 mb-0 md:mb-2" />
             <div className="text-left md:text-center">
               <h3 className="text-lg font-semibold text-white">Location</h3>
-              <p className="text-gray-300">Votre texte ici</p>
+              <p className="text-gray-300">EPFL, Lausanne</p>
             </div>
           </div>
         </motion.div>

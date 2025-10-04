@@ -35,6 +35,7 @@ Then run the Python backend with the OCR model:
 The Move smart contract is the **core of the project** (the hackathon theme was to build on Sui).
 
 Location: [`move/sources/ChainExam.move`](move/sources/ChainExam.move)  
+You have to publish the Smart Contract and the wallet used for publishing will be assigned the admin role.
 To run tests:
 
 -**cd move**
@@ -58,9 +59,9 @@ Or if you use yarn:
 
 ## 4. REMINDER
 
-To be able to use the full functionalities, the user needs to change the ADMIN address in the ChainExam.move file to put their own admin address
+To be able to use the full functionalities, the user needs to change the ADMIN address in the ChainExam.move file to put their own admin address.
 
-Then, change also the values in the constants.ts file located at [`src/UX`].
+Then, change also the values (like package ID) in the constants.ts file located at [`src/UX`].
 
 Also add an API_KEY.txt at the folder [`backend`] to be able to use the ML algorithm for OCR.
 

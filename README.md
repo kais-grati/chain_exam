@@ -59,7 +59,7 @@ Or if you use yarn:
 
 ## 4. REMINDER
 
-To be able to use the full functionalities, the user needs to change the ADMIN address in the ChainExam.move file to put their own admin address
+To be able to use the full functionalities, the user needs to change the ADMIN address in the ChainExam.move file to put their own admin address and to update the package ID field in the src/UX/constants.ts file.
 
 Then, change also the values in the constants.ts file located at [`src/UX`].
 

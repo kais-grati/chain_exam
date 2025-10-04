@@ -17,10 +17,17 @@ The goal of this project is to leverage the **Sui blockchain** to build a decent
 ---
 ## Screenshots
 
+### Home page
 ![Home page screenshot](homepage.png)
+
+### Corrector point of view
 ![Corrector point of view](corrector_pov.png)
+
+### Admin point of view
 ![Admin point of view](admin_pov.png)
 ![Admin point of view 2](admin_pov2.png)
+
+### Student point of view after receiving feedbacks
 ![Student point of view](student_pov.png)
 
 ---

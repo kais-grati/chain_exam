@@ -15,6 +15,15 @@ The goal of this project is to leverage the **Sui blockchain** to build a decent
 -  **Different Languages**: Python backend, Sui Move smart contracts, and a React/TypeScript frontend.  
 
 ---
+## Screenshots
+
+![Home page screenshot](homepage.png)
+![Corrector point of view](corrector_pov.png)
+![Admin point of view](admin_pov.png)
+![Admin point of view 2](admin_pov2.png)
+![Student point of view](student_pov.png)
+
+---
 
 ## Quick Start
 

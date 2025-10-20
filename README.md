@@ -4,6 +4,9 @@ Welcome to **Chain Exam**, a project developed during the **BSA x SUI Hackathon 
 
 The goal of this project is to leverage the **Sui blockchain** to build a decentralized exam submission and grading system for universities.  
 
+Demo video:
+[Demo](https://youtu.be/F3ViuZZCFQo)
+
 ---
 
 ##  Features
